@@ -4,6 +4,11 @@
 
 (def illuminant [0.9643 1.0 0.8251])
 
+(defn abs [n]
+  (cond
+    (neg? n) (- n)
+    :else n))
+
 (defn angle [c] (-
               (/ TAU 6)
               (* TAU c)))
@@ -32,26 +37,33 @@
     (L->Y (first Lab))
     (b->Z (first Lab) (last Lab))))
 
-(defn clip-rgb-channel [channel]
-  (if (neg? channel)
-  0
-  (if (> channel 1)
-    1
-    channel)))
+(defn clamp
+  "Constrains all elements in v to be between vmin and vmax"
+  [vmin vmax v] (map (fn [x] (max vmin (min vmax x))) v))
+
+(defn clamp-rgb [rgb]
+  "Constrains vector to RGB color space"
+  (clamp 0 255 rgb))
+
+(defn clamp-cyl [cyl]
+  "Constrains vector to HSL or HSV color space"
+  (conj
+   (clamp 0 360 (first cyl))
+   (clamp 0 1 (rest cyl))))
 
 (defn channel* [xyz]
   (vector
-    (clip-rgb-channel
+    (clamp-rgb
       (+
         (* 3.2406 (first xyz))
         (* -1.5372 (second xyz))
         (* -0.4986 (last xyz))))
-    (clip-rgb-channel
+    (clamp-rgb
       (+
         (* -0.9689 (first xyz))
         (* 1.8758 (second xyz))
         (* 0.0415 (last xyz))))
-    (clip-rgb-channel
+    (clamp-rgb
       (+
         (* 0.0557 (first xyz))
         (* 0.2040 (second xyz))
@@ -62,3 +74,23 @@
 
 (defn Lab->RGB [Lab]
   (XYZ->RGB (Lab->XYZ Lab)))
+
+;; karma to Richard Newman for the hex converter
+;; https://groups.google.com/d/msg/clojure/JrnYQp84Dig/YqzTYRllJTkJ
+(defn HEX->RGB [#^String hex]
+  (Integer/parseInt (.substring hex 2) 16))
+
+(defn chroma [hsv]
+  (* (second hsv) (last hsv)))
+
+(defn H* [hsv]
+  (/ (first hsv) 60))
+
+(defn intermediate [hsv]
+  (* (chroma hsv)
+     (- 1
+        (abs (-
+               (mod (H* hsv) 2)
+               1)))))
+
+(defn HSV->RGB [hsv] )

@@ -1,13 +1,17 @@
 # chroma
 
-FIXME: write description
+What I've been hacking at lately: general color-space transformations in the spirit of Chroma.js
 
 ## Usage
 
-FIXME: write
+Use leiningen to fire up the repl and play around.
+
+## Current Issues
+
+Presently having trouble coercing the input data (ie color values as represented by RGB, CIELab, HSL or HSV 3-tuples) into the proper numeric types for processing.
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 Jared Davis @haiqus
 
 Distributed under the Eclipse Public License, the same as Clojure.

@@ -6,8 +6,10 @@
   "twice PI: the ratio of diameter to circumference"
   (* 2 Math/PI))
 
+;; http://books.google.com/books?id=s5CBZLBakawC&lpg=PA115&ots=LPvD867Ixi&dq=0.9643%2C1.00%2C0.8251&pg=PA115#v=onepage&q=0.9643,1.00,0.8251&f=false
 (def illuminant
-  "constant supplied by Dalrymple. what for? why? not sure..."
+  "chromatic adaptation from white point D65 to D50...
+  Analogous to the color white in XYZ color space at morning, as percieved by the human eye."
   '(0.9643 1.0 0.8251))
 
 (defn abs [n]
@@ -17,7 +19,7 @@
     :else n))
 
 (defn angle [c]
-  ""
+  "returns the angle of a color on color wheel"
   (-
     (/ TAU 6)
     (* TAU c)))
@@ -125,7 +127,7 @@
 (defn H* [hsv]
   "The hue of an HSV color, 'cut' to fix its hexagonal representation.
   Used to calculate color transformations and mixtures."
-  (/ (first hsv) 60))
+  (float (/ (first hsv) 60)))
 
 (defn intermediate [chroma cyl]
   "Computes the intermediate value between hsv and rgb."
@@ -139,18 +141,7 @@
 (defn HSV->RGB [hsv]
   "Converts hsv colors to rgb. Recombination of hue and intermediate values is calculated according to the hue.
   Hue determines which 'face' of the HSV hexagon corresponds to RGB balance."
-  (let [hsv* (clamp-cyl hsv)]
-    (let [h (H* hsv*) x (intermediate hsv-chroma hsv*) c (hsv-chroma hsv*)]
-      (cond
-        (= h 0) (seq 0 0 0)
-        (< h 1) (seq c x 0)
-        (< h 2) (seq x c 0) 
-        (< h 3) (seq 0 c x)
-        (< h 4) (seq 0 x c)
-        (< h 5) (seq x 0 c)
-        (< h 6) (seq c 0 x)
-        :else (seq 0 0 0)
-       ))))
+  ((H* hsv) (intermediate hsv-chroma hsv) (hsv-chroma hsv)))
 
 (defn hsl-chroma [hsl]
   "Distance of HSL color from the origin."
@@ -158,15 +149,4 @@
 
 (defn HSL->RGB [hsl]
   "Converts hsv colors to rgb."
-  (let [h (H* hsl) x (intermediate hsl-chroma hsl) c (hsl-chroma hsl)]
-   (cond
-    (= h 0) (seq 0 0 0)
-    (< h 1) (seq c x 0)
-    (< h 2) (seq x c 0) 
-    (< h 3) (seq 0 c x)
-    (< h 4) (seq 0 x c)
-    (< h 5) (seq x 0 c)
-    (< h 6) (seq c 0 x)
-    :else (seq 0 0 0)
-     )))
-
+  '((H* hsl) (intermediate hsl-chroma hsl) (hsl-chroma hsl)))
